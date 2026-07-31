@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlgoArena - Interactive Graph Algorithm Visualizer and Comparator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background glow effects -->
+  <div class="glow-bg glow-1"></div>
+  <div class="glow-bg glow-2"></div>
+
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">▲</span>
+        <div>
+          <h1>AlgoArena</h1>
+          <p class="tagline">Interactive Graph Algorithm Visualizer & Comparator</p>
+        </div>
+      </div>
+      <div class="status-bar">
+        <span id="interaction-helper">Mode: Add Node. Click on the canvas to place a node.</span>
+      </div>
+    </header>
+
+    <main class="main-layout">
+      <!-- Sidebar Control Panel -->
+      <aside class="control-panel">
+        <section class="panel-section">
+          <h2>Graph Operations</h2>
+          <div class="btn-group-vertical">
+            <button id="btn-mode-node" class="btn btn-mode active" data-mode="node">
+              <span class="icon">●</span> Add Node
+            </button>
+            <button id="btn-mode-edge" class="btn btn-mode" data-mode="edge">
+              <span class="icon">➔</span> Add Edge
+            </button>
+            <button id="btn-delete-node" class="btn btn-danger" disabled>
+              <span class="icon">✕</span> Delete Selected
+            </button>
+            <button id="btn-clear" class="btn btn-danger-outline" style="border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; background: rgba(239, 68, 68, 0.05);">
+              <span class="icon">🗑</span> Clear Canvas
+            </button>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>Select & Run</h2>
+          <div class="algo-selector">
+            <button class="btn btn-algo" data-algo="bfs">Breadth-First Search (BFS)</button>
+            <button class="btn btn-algo" data-algo="dfs">Depth-First Search (DFS)</button>
+            <button class="btn btn-algo" data-algo="dijkstra">Dijkstra's Algorithm</button>
+            <button class="btn btn-algo" data-algo="bellman">Bellman-Ford Algorithm</button>
+            <button class="btn btn-algo" data-algo="kruskal">Kruskal's Algorithm (MST)</button>
+          </div>
+          
+          <div class="control-row">
+            <label for="speed-slider">Speed</label>
+            <input type="range" id="speed-slider" min="100" max="2000" value="800" step="50">
+            <span id="speed-value" class="mono-text">800ms</span>
+          </div>
+
+          <div class="btn-row">
+            <button id="btn-run" class="btn btn-primary" disabled>Run Algorithm</button>
+            <button id="btn-reset-vis" class="btn btn-secondary" disabled>Reset Visuals</button>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>Compare Algorithms</h2>
+          <div class="compare-selectors">
+            <div class="select-group">
+              <label for="compare-algo-1">Algorithm 1</label>
+              <select id="compare-algo-1">
+                <option value="bfs">BFS</option>
+                <option value="dfs">DFS</option>
+                <option value="dijkstra">Dijkstra</option>
+                <option value="bellman">Bellman-Ford</option>
+                <option value="kruskal">Kruskal</option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label for="compare-algo-2">Algorithm 2</label>
+              <select id="compare-algo-2">
+                <option value="dfs">DFS</option>
+                <option value="bfs">BFS</option>
+                <option value="dijkstra">Dijkstra</option>
+                <option value="bellman">Bellman-Ford</option>
+                <option value="kruskal">Kruskal</option>
+              </select>
+            </div>
+          </div>
+          <button id="btn-compare" class="btn btn-accent">Compare Traversals</button>
+        </section>
+      </aside>
+
+      <!-- Main Visualizer Area -->
+      <section class="canvas-area">
+        <canvas id="main-canvas"></canvas>
+        <div id="canvas-overlay-message" class="overlay-msg hidden"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Custom Dialog Modal: Edge Weight Input -->
+  <div id="modal-weight" class="modal">
+    <div class="modal-content glass">
+      <h3>Enter Edge Weight</h3>
+      <p>Connect node <span id="weight-node-a" class="node-label-span"></span> to node <span id="weight-node-b" class="node-label-span"></span></p>
+      <div class="input-group">
+        <input type="number" id="edge-weight-input" value="1" placeholder="Weight (supports negative for Bellman-Ford)">
+      </div>
+      <div class="modal-actions">
+        <button id="btn-weight-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="btn-weight-save" class="btn btn-primary">Add Edge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Dialog Modal: Comparison View -->
+  <div id="modal-compare" class="modal modal-lg">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3>Algorithm Traversal Comparison</h3>
+        <button id="btn-compare-close" class="btn-close">✕</button>
+      </div>
+      
+      <div class="comparison-split-view">
+        <!-- Visualizer Left -->
+        <div class="compare-pane">
+          <h4 id="compare-title-1">Algorithm 1</h4>
+          <div class="canvas-wrapper">
+            <canvas id="compare-canvas-1"></canvas>
+          </div>
+          <div class="compare-info">
+            <p><strong>Visited Order:</strong> <span id="compare-visited-1" class="mono-text">-</span></p>
+            <p><strong>Total Visited:</strong> <span id="compare-count-1" class="mono-text">0</span> nodes</p>
+            <p><strong>Execution Time:</strong> <span id="compare-time-1" class="mono-text">0.00 ms</span></p>
+          </div>
+        </div>
+
+        <!-- Visualizer Right -->
+        <div class="compare-pane">
+          <h4 id="compare-title-2">Algorithm 2</h4>
+          <div class="canvas-wrapper">
+            <canvas id="compare-canvas-2"></canvas>
+          </div>
+          <div class="compare-info">
+            <p><strong>Visited Order:</strong> <span id="compare-visited-2" class="mono-text">-</span></p>
+            <p><strong>Total Visited:</strong> <span id="compare-count-2" class="mono-text">0</span> nodes</p>
+            <p><strong>Execution Time:</strong> <span id="compare-time-2" class="mono-text">0.00 ms</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison-footer">
+        <div class="compare-status-msg" id="compare-status-msg">Click Play to start the comparative visualization.</div>
+        <div class="compare-controls">
+          <button id="btn-compare-play" class="btn btn-primary">Play Comparison</button>
+          <button id="btn-compare-reset" class="btn btn-secondary">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include App Scripts -->
+  <script src="js/graph.js"></script>
+  <script src="js/algorithms.js"></script>
+  <script src="js/visualizer.js"></script>
+  <script src="js/comparator.js"></script>
+</body>
+</html>
