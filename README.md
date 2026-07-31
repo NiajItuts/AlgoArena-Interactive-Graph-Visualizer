@@ -46,23 +46,4 @@ algo-arena/
 ---
 
 ## How to Run
-
-Since AlgoArena is built on native web technologies, there are no build steps, `npm install` packages, or compilers required.
-
-### Method 1: Direct File Open
-Simply double-click on `index.html` or open it with your favorite web browser (Chrome, Firefox, Safari, Edge).
-
-### Method 2: Local HTTP Server (Recommended)
-To run via a local web server (which ensures canvas resizing and script modules load reliably in all security sandboxes):
-
-1.  Open your terminal in the `algo-arena` directory.
-2.  Run one of the following commands:
-    *   **Python 3**:
-        ```bash
-        python -m http.server 8000
-        ```
-    *   **NodeJS (npx)**:
-        ```bash
-        npx serve
-        ```
-3.  Open your browser and navigate to `http://localhost:8000` (or `http://localhost:3000` for serve).
+Click on the link: https://niajituts.github.io/AlgoArena-Interactive-Graph-Visualizer/
